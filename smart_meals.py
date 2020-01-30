@@ -3,12 +3,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import helper
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 st.header("Happy Meals")
 
-# user input personal info
+# user input demographic info
 gender = st.radio(label='Gender', options=('M', 'F'))
 age = st.number_input('Age')
 ht = st.number_input('Height (in)')
@@ -63,18 +64,44 @@ if goal_wt:
 lda_matrix = pd.read_csv('lda_matrix.csv')
 lda_matrix.set_index('title', inplace=True)
 
+df_nutrient = pd.read_csv('dinner_nutrient.csv')
+df_nutrient.set_index('title', inplace=True)
+
+quick_meal = st.radio('Do you prefer only quick meals (ready in 30 minutes)?',
+                     ('Yes', 'No'))
+    
 # choose 2 most relevant recipes from each topic to show as choices
-recipe_options = []
+recipe_option_1 = []
 for topic in lda_matrix.columns.tolist():
     dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.8].index.tolist()
     recipe_ls = dish_ls[:2]
-    recipe_options.extend(recipe_ls)
+    recipe_option_1.extend(recipe_ls)
     
 options = st.multiselect('Please choose at least 3 meals that fit into your usual diet well.', 
-          options=(recipe_options))
+                         options=(recipe_option_1))
 
+# provide more meal choices
+recipe_option_2 = []
+for topic in lda_matrix.columns.tolist():
+    dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.85].index.tolist()
+    recipe_ls = dish_ls[2:4]
+    recipe_option_2.extend(recipe_ls)
 
-if st.button('submit'):
+options_2 = st.multiselect('More choices', options=(recipe_option_2))
+
+recipe_option_3 = []
+for topic in lda_matrix.columns.tolist():
+    dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.85].index.tolist()
+    recipe_ls = dish_ls[4:6]
+    recipe_option_3.extend(recipe_ls)
+
+options_3 = st.multiselect('And more', options=(recipe_option_3))
+
+options.extend(options_2)
+options.extend(options_3)
+
+        
+if st.button('Submit'):
 
     # use recommender
     ## calculate cosine similarity
@@ -84,147 +111,27 @@ if st.button('submit'):
     ## creating a Series for recipe titles
     indices = pd.Series(lda_matrix.index)
 
-    ## define a function to take in recipe title and return the top recommended recipes
-    def recommender(title, df=lda_matrix, cosine_sim=cosine_sim, top_n=10):   
-        # initialize an empty list of recommended recipes
-        rec_recipes = []
-    
-        # get the index of the movie that matches the title
-        idx = indices[indices == title].index[0]
-
-        # creating a Series with the similarity scores in descending order
-        score_series = pd.Series(cosine_sim[idx]).sort_values(ascending=False)
-
-        # getting the indexes of the n most similar movies
-        top_n_idx = score_series.iloc[1:top_n+1].index.tolist()
-    
-        # get the title of the top n matching recipes
-        for i in top_n_idx:
-            rec_recipes.append(df.index[i])
-        
-        return rec_recipes
-
     ## get top 100 similar recipes for each option
     total_rec_recipes = []
     for title in options:
-        rec_recipes = recommender(title, top_n=100)
+        rec_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
         total_rec_recipes.extend(rec_recipes)
-            
-            
+                        
     # use optimizer
-    ## load data
-    df_nutrient = pd.read_csv('dinner_nutrient.csv')
-    df_nutrient = df_nutrient.set_index('title')
-    
-    ## define a function to print recommended meals
-    def print_rec(df, i):
-        """
-        Print recommendation
-        """
-        serving = df['your serving'][i]
-        recipe = df['recipe'][i]
-        calorie = df['calorie'][i]
-        link = df['link'][i]
-        st.write(f'Your day {i+1} meal is {serving} serving(s) of "{recipe}" with {calorie} kcal at:\n{link}.')
-    
-    ## define a function to plot macronutrient ratio
-    def plot_nutrient(df, i):
-        """
-        Plot nutrient ratios
-        """
-        labels = ['Carbohydrate', 'Protein', 'Fat']
-        sizes = [df['carb ratio'][i], df['protein ratio'][i], df['fat ratio'][i]]
-        colors = ['lightcoral', 'lightskyblue', 'gold']
-
-        # plot
-        plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', 
-                startangle=150, counterclock=False)
-        plt.axis('square')
-        st.pyplot();
-    
-    
-    ## define a function to take in recommended recipe list and return optimized recipes
-    def optimizer(rec_recipes, protein, calorie):
-        """
-        Optimize recipes by setting nutrition thresholds
-        """
-        protein_cut = protein # set protein threshold
-        fat_cut = 0.35 # set fat_ratio threshold
-        calorie_cut = calorie # set calorie threshold 
-
-        # create a new rec dict
-        new_rec = {'recipe': [], 'link': [], 'calorie': [], 'protein': [], 'protein ratio': [], 'fat ratio': [], 
-                   'carb ratio': [], 'your serving': [], 'recipe serving': []}
-
-        while len(rec_recipes) > 0:
-            if len(new_rec['recipe']) == 3:
-                df = pd.DataFrame(new_rec, index=[['Day 1','Day 2','Day 3']])
-                for i in range(3):
-                    print_rec(df, i)
-                    plot_nutrient(df, i)
-                return 
-
-            recipe = np.random.choice(rec_recipes)  
-            rec_recipes.remove(recipe)      
-
-            # check fat
-            if df_nutrient.loc[recipe].fat_ratio > fat_cut:
-                continue
-            # check calorie
-            if df_nutrient.loc[recipe].calorie > calorie_cut:
-                portion = np.round(calorie_cut/df_nutrient.loc[recipe].calorie, 2) 
-                protein = np.round(df_nutrient.loc[recipe].protein_g * portion)
-                # check protein
-                if protein < protein_cut:
-                    continue
-                calorie = np.round(df_nutrient.loc[recipe].calorie * portion) 
-                protein_ratio = df_nutrient.loc[recipe].protein_ratio
-                fat_ratio = df_nutrient.loc[recipe].fat_ratio
-                carb_ratio = df_nutrient.loc[recipe].carb_ratio
-                serving = df_nutrient.loc[recipe].servings
-                link = df_nutrient.loc[recipe].link
-                new_rec['recipe'].append(recipe)
-                new_rec['link'].append(link)
-                new_rec['calorie'].append(calorie)
-                new_rec['protein'].append(protein)
-                new_rec['protein ratio'].append(protein_ratio)
-                new_rec['fat ratio'].append(fat_ratio)
-                new_rec['carb ratio'].append(carb_ratio)
-                new_rec['your serving'].append(portion)
-                new_rec['recipe serving'].append(serving)
-            else:
-                portion = np.round(calorie_cut/df_nutrient.loc[recipe].calorie, 2) 
-                protein = np.round(df_nutrient.loc[recipe].protein_g * portion)
-                # check protein
-                if protein < protein_cut:
-                    continue
-                calorie = np.round(df_nutrient.loc[recipe].calorie * portion) 
-                protein_ratio = df_nutrient.loc[recipe].protein_ratio
-                fat_ratio = df_nutrient.loc[recipe].fat_ratio
-                carb_ratio = df_nutrient.loc[recipe].carb_ratio
-                serving = df_nutrient.loc[recipe].servings
-                link = df_nutrient.loc[recipe].link
-                new_rec['recipe'].append(recipe)
-                new_rec['link'].append(link)
-                new_rec['calorie'].append(calorie)
-                new_rec['protein'].append(protein)
-                new_rec['protein ratio'].append(protein_ratio)
-                new_rec['fat ratio'].append(fat_ratio)
-                new_rec['carb ratio'].append(carb_ratio)
-                new_rec['your serving'].append(portion)
-                new_rec['recipe serving'].append(serving)
-
-        st.write('Running out of recipes. Please start over and choose more preferred meals.')
-        return
-               
-
-    ## calculate protein and calorie
-    protein_need = wt_kg * 0.8
+    ## calculate protein and calorie needs per meal
+    protein_lower = wt_kg * 0.8 / 3
+    protein_upper = wt_kg * 2.2 / 3
     if goal_wt:
         calorie_need = new_calorie / 3
     else:
         calorie_need = calorie / 3
 
     ## use optimizer
-    optimizer(total_rec_recipes, protein_need, calorie_need)
-
+    if quick_meal == 'Yes':
+        helper.optimizer(total_rec_recipes, df_nutrient, protein_lower, protein_upper, 
+                         calorie_need, time='on')
+    else:
+        helper.optimizer(total_rec_recipes, df_nutrient, protein_lower, protein_upper, 
+                         calorie_need)
+        
+        
