@@ -30,7 +30,6 @@ def print_rec(df, i):
     recipe = df['recipe'][i]
     calorie = df['calorie'][i]
     link = df['link'][i]
-    st.header('Your 5-day dinner plan is ready.')
     st.subheader(f'Day {i+1} : {recipe}')
     st.subheader(f'Your serving: {serving}')
     st.subheader(f'Calorie: {calorie}')
@@ -60,9 +59,10 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
                'carb ratio': [], 'serving': []}
 
     while len(rec_recipes) > 0:
-        if len(new_rec['recipe']) == 3:
-            df = pd.DataFrame(new_rec, index=[['Day 1','Day 2','Day 3']])
-            for i in range(3):
+        if len(new_rec['recipe']) == 5:
+            df = pd.DataFrame(new_rec, index=[['Day 1','Day 2','Day 3', 'Day 4', 'Day 5']])
+            st.header('Your 5-day dinner plan is ready.')
+            for i in range(5):
                 print_rec(df, i)
                 plot_nutrient(df, i)
             return 

@@ -43,7 +43,7 @@ else:
     calorie *= 1.9
 
 calorie = np.round(calorie)
-st.write('Your daily calorie need is', calorie, 'kcal to maintain your current weight.')
+st.write('Your daily calorie need is', calorie, 'to maintain your current weight.')
 
 # calculate days to reach goal wt
 if goal_wt:
@@ -51,11 +51,11 @@ if goal_wt:
     new_calorie = calorie - 500
     if new_calorie >= 1200:
         st.write('Your daily calorie need is', new_calorie, 
-                 'kcal to lose weight and you need', week, 
-                 'weeks to reach your goal weight.')
+                 'to lose weight and you need', week, 
+                 'weeks to reach your goal.')
     else:
-        st.write('Warning! You daily calorie need is lower than 1200 kcal. Please', 
-                 'either increase your goal weight or increase your activity level to',
+        st.write('Warning! You daily calorie need is lower than 1200. Please either', 
+                 'increase your goal weight or increase your activity level to',
                  'ensure adequate daily nutrition.')
 
 
@@ -116,6 +116,8 @@ if st.button('Submit'):
     for title in options:
         rec_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
         total_rec_recipes.extend(rec_recipes)
+    
+    total_rec_recipes = list(set(total_rec_recipes))
                         
     # use optimizer
     ## calculate protein and calorie needs per meal
