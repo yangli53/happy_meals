@@ -61,10 +61,10 @@ if goal_wt:
 
 # user input meal preferences
 # load data
-lda_matrix = pd.read_csv('lda_matrix.csv')
+lda_matrix = pd.read_csv('recipe_ida.csv')
 lda_matrix.set_index('title', inplace=True)
 
-df_nutrient = pd.read_csv('dinner_nutrient.csv')
+df_nutrient = pd.read_csv('recipe_nutrient.csv')
 df_nutrient.set_index('title', inplace=True)
 
 quick_meal = st.radio('Do you prefer only quick meals (ready in 30 minutes)?',
@@ -73,7 +73,7 @@ quick_meal = st.radio('Do you prefer only quick meals (ready in 30 minutes)?',
 # choose 2 most relevant recipes from each topic to show as choices
 recipe_option_1 = []
 for topic in lda_matrix.columns.tolist():
-    dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.8].index.tolist()
+    dish_ls = lda_matrix[topic].sort_values(ascending=False).index.tolist()
     recipe_ls = dish_ls[:2]
     recipe_option_1.extend(recipe_ls)
     
@@ -83,7 +83,7 @@ options = st.multiselect('Please choose at least 3 meals that fit into your usua
 # provide more meal choices
 recipe_option_2 = []
 for topic in lda_matrix.columns.tolist():
-    dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.85].index.tolist()
+    dish_ls = lda_matrix[topic].sort_values(ascending=False).index.tolist()
     recipe_ls = dish_ls[2:4]
     recipe_option_2.extend(recipe_ls)
 
