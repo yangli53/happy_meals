@@ -11,23 +11,23 @@ st.header("Happy Meals")
 
 # user input demographic info
 gender = st.radio(label='Gender', options=('M', 'F'))
-age = st.number_input('Age')
-ht = st.number_input('Height (in)')
-wt = st.number_input('Current weight (lb)')
+age = st.number_input('Age', value=18, step=1)
+ht = st.number_input('Height (in)', value=60, step=1)
+wt = st.number_input('Current weight (lb)', value=100, step=1)
 active = st.radio(label='Activity level', 
          options=('Sedentary (little or no exercise)', 
          'Lightly active (light exercise/sports 1-3 days/week)', 
          'Moderately active (moderate exercise/sports 3-5 days/week)', 
          'Very active (hard exercise/sports 6-7 days a week)',
          'extra active (very hard exercise/sports & physical job or 2x training)'))
-goal_wt = st.number_input('Goal weight (lb)')
+goal_wt = st.number_input('Goal weight (lb)', value=wt, step=1)
 
-# calculate current daily calorie need
+# calculate current daily calorie need based on Mifflin St. Jeor equation
 ht_cm = np.round(ht * 2.54)
 wt_kg = np.round(wt / 2.2)
 
 if gender == 'M':
-    calorie = 10 * wt_kg + 6.25 * ht_cm - 5 * age + 5
+    calorie = 10 * wt_kg + 6.25 * ht_cm - 5 * age + 5 
 else:
     calorie = 10 * wt_kg + 6.25 * ht_cm - 5 * age - 161
 
@@ -43,11 +43,14 @@ else:
     calorie *= 1.9
 
 calorie = np.round(calorie)
-st.write('Your daily calorie need is', calorie, 'to maintain your current weight.')
 
-# calculate days to reach goal wt
-if goal_wt:
-    week = (wt - goal_wt) / 1
+# output daily calorie need
+if goal_wt == wt:
+    st.write('Your daily calorie need is', calorie, 'to maintain your current weight.')
+
+# calculate weeks to reach goal based on recommendation that losing 1 lb/week
+elif goal_wt < wt:
+    week = wt - goal_wt 
     new_calorie = calorie - 500
     if new_calorie >= 1200:
         st.write('Your daily calorie need is', new_calorie, 
@@ -58,43 +61,37 @@ if goal_wt:
                  'increase your goal weight or increase your activity level to',
                  'ensure adequate daily nutrition.')
 
+else:
+    st.write('Oops! Your goal weight is over your current weight.')
+
 
 # user input meal preferences
 # load data
 lda_matrix = pd.read_csv('recipe_ida.csv')
 lda_matrix.set_index('title', inplace=True)
-
 df_nutrient = pd.read_csv('recipe_nutrient.csv')
 df_nutrient.set_index('title', inplace=True)
 
 quick_meal = st.radio('Do you prefer only quick meals (ready in 30 minutes)?',
                      ('Yes', 'No'))
     
-# choose 2 most relevant recipes from each topic to show as choices
+# choose 6 most relevant recipes from each topic to show as meal choices
 recipe_option_1 = []
+recipe_option_2 = []
+recipe_option_3 = []
 for topic in lda_matrix.columns.tolist():
-    dish_ls = lda_matrix[topic].sort_values(ascending=False).index.tolist()
-    recipe_ls = dish_ls[:2]
-    recipe_option_1.extend(recipe_ls)
+    recipe_name_1 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[:2]
+    recipe_name_2 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[2:4]
+    recipe_name_3 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[4:6]
+    recipe_option_1.extend(recipe_name_1)
+    recipe_option_2.extend(recipe_name_2)
+    recipe_option_3.extend(recipe_name_3)
     
 options = st.multiselect('Please choose at least 3 meals that fit into your usual diet well.', 
                          options=(recipe_option_1))
 
 # provide more meal choices
-recipe_option_2 = []
-for topic in lda_matrix.columns.tolist():
-    dish_ls = lda_matrix[topic].sort_values(ascending=False).index.tolist()
-    recipe_ls = dish_ls[2:4]
-    recipe_option_2.extend(recipe_ls)
-
 options_2 = st.multiselect('More choices', options=(recipe_option_2))
-
-recipe_option_3 = []
-for topic in lda_matrix.columns.tolist():
-    dish_ls = lda_matrix[topic][lda_matrix[topic] >= 0.85].index.tolist()
-    recipe_ls = dish_ls[4:6]
-    recipe_option_3.extend(recipe_ls)
-
 options_3 = st.multiselect('And more', options=(recipe_option_3))
 
 options.extend(options_2)
@@ -107,33 +104,33 @@ if st.button('Submit'):
     ## calculate cosine similarity
     lda_array = lda_matrix.to_numpy()
     cosine_sim = cosine_similarity(lda_array)
-
+    
     ## creating a Series for recipe titles
     indices = pd.Series(lda_matrix.index)
 
     ## get top 100 similar recipes for each option
-    total_rec_recipes = []
+    rec_recipes = []
     for title in options:
-        rec_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
-        total_rec_recipes.extend(rec_recipes)
+        top_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
+        rec_recipes.extend(top_recipes)
     
-    total_rec_recipes = list(set(total_rec_recipes))
+    rec_recipes = list(set(rec_recipes))
                         
     # use optimizer
     ## calculate protein and calorie needs per meal
     protein_lower = wt_kg * 0.8 / 3
     protein_upper = wt_kg * 2.2 / 3
-    if goal_wt:
+    if goal_wt < wt:
         calorie_need = new_calorie / 3
     else:
         calorie_need = calorie / 3
 
     ## use optimizer
     if quick_meal == 'Yes':
-        helper.optimizer(total_rec_recipes, df_nutrient, protein_lower, protein_upper, 
-                         calorie_need, time='on')
+        helper.optimizer(rec_recipes, df_nutrient, protein_lower, 
+                         protein_upper, calorie_need, time='on')
     else:
-        helper.optimizer(total_rec_recipes, df_nutrient, protein_lower, protein_upper, 
-                         calorie_need)
+        helper.optimizer(rec_recipes, df_nutrient, protein_lower, 
+                         protein_upper, calorie_need)
         
         

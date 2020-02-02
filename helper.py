@@ -5,29 +5,29 @@ import matplotlib.pyplot as plt
 
 
 # define a function to take in recipe title and return the top recommended recipes
-def recommender(title, indices, df, cosine_sim, top_n):   
+def recommender(title, indices, df, cosine_sim, top_n):
     # initialize an empty list of recommended recipes
-    rec_recipes = []
+    top_recipes = []
     
-    # get the index of the movie that matches the title
+    # get the index of the recipe that matches the title
     idx = indices[indices == title].index[0]
 
     # creating a Series with the similarity scores in descending order
     score_series = pd.Series(cosine_sim[idx]).sort_values(ascending=False)
 
-    # getting the indexes of the n most similar movies
-    top_n_idx = score_series.iloc[1:top_n+1].index.tolist()
+    # getting the indexes of the n most similar recipes
+    top_idx = score_series.iloc[1:top_n+1].index.tolist()
     
     # get the title of the top n matching recipes
-    for i in top_n_idx:
-        rec_recipes.append(df.index[i])
+    for i in top_idx:
+        top_recipes.append(df.index[i])
         
-    return rec_recipes
+    return top_recipes
 
 # define a function to print recommended meals
 def print_rec(df, i):
-    serving = df['serving'][i]
     recipe = df['recipe'][i]
+    serving = df['serving'][i]    
     calorie = df['calorie'][i]
     link = df['link'][i]
     st.subheader(f'Day {i+1} : {recipe}')
@@ -55,8 +55,8 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
     calorie_limit = calorie # set calorie limit 
 
     # create a new rec dict
-    new_rec = {'recipe': [], 'link': [], 'calorie': [], 'protein': [], 'protein ratio': [], 'fat ratio': [], 
-               'carb ratio': [], 'serving': []}
+    new_rec = {'recipe': [], 'link': [], 'serving': [], 'calorie': [], 'protein': [], 
+               'fat ratio': [], 'protein ratio': [], 'carb ratio': []}
 
     while len(rec_recipes) > 0:
         if len(new_rec['recipe']) == 5:
@@ -68,7 +68,7 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
             return 
 
         recipe = np.random.choice(rec_recipes)
-        rec_recipes.remove(recipe)      
+        rec_recipes.remove(recipe) 
         
         # check time
         if time == 'on':
@@ -88,19 +88,20 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
             if protein < protein_lower or protein > protein_upper:
                 continue
             calorie = np.round(df.loc[recipe].calorie * portion) 
-            protein_ratio = df.loc[recipe].protein_ratio
-            fat_ratio = df.loc[recipe].fat_ratio
-            carb_ratio = df.loc[recipe].carb_ratio
             serving = np.round(portion/df.loc[recipe].servings, 1)
-            link = df.loc[recipe].link
+            fat_ratio = df.loc[recipe].fat_ratio
+            protein_ratio = df.loc[recipe].protein_ratio            
+            carb_ratio = df.loc[recipe].carb_ratio            
+            link = df.loc[recipe].link            
             new_rec['recipe'].append(recipe)
             new_rec['link'].append(link)
+            new_rec['serving'].append(serving)
             new_rec['calorie'].append(calorie)
             new_rec['protein'].append(protein)
-            new_rec['protein ratio'].append(protein_ratio)
             new_rec['fat ratio'].append(fat_ratio)
+            new_rec['protein ratio'].append(protein_ratio)
             new_rec['carb ratio'].append(carb_ratio)
-            new_rec['serving'].append(serving)
+            
         else:
             portion = np.round(calorie_limit/df.loc[recipe].calorie, 2) 
             protein = np.round(df.loc[recipe].protein_g * portion)
@@ -109,19 +110,19 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
             if protein < protein_lower or protein > protein_upper:
                 continue
             calorie = np.round(df.loc[recipe].calorie * portion) 
-            protein_ratio = df.loc[recipe].protein_ratio
-            fat_ratio = df.loc[recipe].fat_ratio
-            carb_ratio = df.loc[recipe].carb_ratio
             serving = np.round(portion/df.loc[recipe].servings, 1)
+            fat_ratio = df.loc[recipe].fat_ratio
+            protein_ratio = df.loc[recipe].protein_ratio            
+            carb_ratio = df.loc[recipe].carb_ratio            
             link = df.loc[recipe].link
             new_rec['recipe'].append(recipe)
             new_rec['link'].append(link)
+            new_rec['serving'].append(serving)
             new_rec['calorie'].append(calorie)
             new_rec['protein'].append(protein)
-            new_rec['protein ratio'].append(protein_ratio)
             new_rec['fat ratio'].append(fat_ratio)
+            new_rec['protein ratio'].append(protein_ratio)
             new_rec['carb ratio'].append(carb_ratio)
-            new_rec['serving'].append(serving)
 
     st.write('Running out of recipes. Please start over and choose more preferred meals.')
     return
