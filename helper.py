@@ -48,10 +48,9 @@ def plot_nutrient(df, i):
     st.pyplot();
     
 # define a function to take in recommended recipe list and return optimized recipes
-def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'):
+def optimizer(rec_recipes, df, protein_lower, calorie, time='off'):
     protein_lower = protein_lower # set protein min
-    protein_upper = protein_upper # set protein max 
-    fat_limit = 0.35 # set fat_ratio limit
+    fat_limit = 0.40 # set fat_ratio limit
     calorie_limit = calorie # set calorie limit 
 
     # create a new rec dict
@@ -85,7 +84,7 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
             protein = np.round(df.loc[recipe].protein_g * portion)
             
             # check protein
-            if protein < protein_lower or protein > protein_upper:
+            if protein < protein_lower:
                 continue
             calorie = np.round(df.loc[recipe].calorie * portion) 
             serving = np.round(portion/df.loc[recipe].servings, 1)
@@ -107,7 +106,7 @@ def optimizer(rec_recipes, df, protein_lower, protein_upper, calorie, time='off'
             protein = np.round(df.loc[recipe].protein_g * portion)
             
             # check protein
-            if protein < protein_lower or protein > protein_upper:
+            if protein < protein_lower:
                 continue
             calorie = np.round(df.loc[recipe].calorie * portion) 
             serving = np.round(portion/df.loc[recipe].servings, 1)

@@ -67,7 +67,7 @@ else:
 
 # user input meal preferences
 # load data
-lda_matrix = pd.read_csv('recipe_ida.csv')
+lda_matrix = pd.read_csv('recipe_lda.csv')
 lda_matrix.set_index('title', inplace=True)
 df_nutrient = pd.read_csv('recipe_nutrient.csv')
 df_nutrient.set_index('title', inplace=True)
@@ -118,8 +118,7 @@ if st.button('Submit'):
                         
     # use optimizer
     ## calculate protein and calorie needs per meal
-    protein_lower = wt_kg * 0.8 / 3
-    protein_upper = wt_kg * 2.2 / 3
+    protein_lower = wt_kg * 0.6 / 3
     if goal_wt < wt:
         calorie_need = new_calorie / 3
     else:
@@ -127,10 +126,8 @@ if st.button('Submit'):
 
     ## use optimizer
     if quick_meal == 'Yes':
-        helper.optimizer(rec_recipes, df_nutrient, protein_lower, 
-                         protein_upper, calorie_need, time='on')
+        helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need, time='on')
     else:
-        helper.optimizer(rec_recipes, df_nutrient, protein_lower, 
-                         protein_upper, calorie_need)
+        helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need)
         
         
