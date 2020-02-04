@@ -23,8 +23,8 @@ active = st.radio(label='Activity level',
 goal_wt = st.number_input('Goal weight (lb)', value=wt, step=1)
 
 # calculate current daily calorie need based on Mifflin St. Jeor equation
-ht_cm = np.round(ht * 2.54)
-wt_kg = np.round(wt / 2.2)
+ht_cm = ht * 2.54
+wt_kg = wt / 2.2
 
 if gender == 'M':
     calorie = 10 * wt_kg + 6.25 * ht_cm - 5 * age + 5 
@@ -118,11 +118,11 @@ if st.button('Submit'):
                         
     # use optimizer
     ## calculate protein and calorie needs per meal
-    protein_lower = wt_kg * 0.6 / 3
+    protein_lower = np.round(wt_kg * 0.8 / 3, 1)
     if goal_wt < wt:
-        calorie_need = new_calorie / 3
+        calorie_need = np.round(new_calorie / 3)
     else:
-        calorie_need = calorie / 3
+        calorie_need = np.round(calorie / 3)
 
     ## use optimizer
     if quick_meal == 'Yes':
