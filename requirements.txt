@@ -4,11 +4,3 @@ pandas
 matplotlib
 seaborn
 sklearn
-re
-ast
-nltk
-spacy
-gensim
-tqdm
-pyLDAvis
-pprint
