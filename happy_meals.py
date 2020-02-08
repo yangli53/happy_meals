@@ -75,27 +75,12 @@ df_nutrient.set_index('title', inplace=True)
 quick_meal = st.radio('Do you prefer only quick meals (ready in 30 minutes)?',
                      ('Yes', 'No'))
     
-# choose 6 most relevant recipes from each topic to show as meal choices
-recipe_option_1 = []
-recipe_option_2 = []
-recipe_option_3 = []
-for topic in lda_matrix.columns.tolist():
-    recipe_name_1 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[:2]
-    recipe_name_2 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[2:4]
-    recipe_name_3 = lda_matrix[topic].sort_values(ascending=False).index.tolist()[4:6]
-    recipe_option_1.extend(recipe_name_1)
-    recipe_option_2.extend(recipe_name_2)
-    recipe_option_3.extend(recipe_name_3)
-    
-options = st.multiselect('Please choose at least 3 meals that fit into your usual diet well.', 
-                         options=(recipe_option_1))
-
-# provide more meal choices
-options_2 = st.multiselect('More choices', options=(recipe_option_2))
-options_3 = st.multiselect('And more', options=(recipe_option_3))
-
-options.extend(options_2)
-options.extend(options_3)
+# provide meal choices randomly
+@st.cache()
+def recipe_choices():
+    return np.random.choice(lda_matrix.index.tolist(), 20)
+options = st.multiselect('Please choose at least 3 meals you like.', 
+                         options=(recipe_choices()))
 
         
 if st.button('Submit'):
