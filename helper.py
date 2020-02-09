@@ -31,7 +31,7 @@ def print_rec(df, i):
     calorie = df['calorie'][i]
     link = df['link'][i]
     st.subheader(f'Day {i+1} : {recipe}')
-    st.subheader(f'Your serving: {serving}')
+    st.subheader(f'Your portion: {serving}')
     st.subheader(f'Calorie: {calorie}')
     st.write(link)
     
