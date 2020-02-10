@@ -8,6 +8,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 st.title('HappyMeals')
+slides = 'https://docs.google.com/presentation/d/1kDxhW0UsAt26-3ktQhoVy4KSbKW5fx0_T0uK-aJvLpU/edit#slide=id.p'
+st.write(slides)
 
 # user input demographic info
 gender = st.radio(label='Gender', options=('M', 'F'))
