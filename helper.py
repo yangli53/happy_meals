@@ -30,9 +30,9 @@ def print_rec(df, i):
     serving = df['serving'][i]    
     calorie = df['calorie'][i]
     link = df['link'][i]
-    st.subheader(f'Day {i+1} : {recipe}')
-    st.subheader(f'Your portion: {serving}')
-    st.subheader(f'Calorie: {calorie}')
+    st.subheader(f'Day {i+1}: {recipe}')
+    st.write(f'Your portion: {serving}')
+    st.write(f'Calorie: {calorie}')
     st.write(link)
     
 # define a function to plot macronutrient ratio
@@ -60,7 +60,7 @@ def optimizer(rec_recipes, df, protein_lower, calorie, time='off'):
     while len(rec_recipes) > 0:
         if len(new_rec['recipe']) == 5:
             df = pd.DataFrame(new_rec, index=[['Day 1','Day 2','Day 3', 'Day 4', 'Day 5']])
-            st.header('Your 5-day dinner plan is ready.')
+            st.subheader('Your 5-day dinner plan is ready.')
             for i in range(5):
                 print_rec(df, i)
                 plot_nutrient(df, i)
@@ -123,5 +123,5 @@ def optimizer(rec_recipes, df, protein_lower, calorie, time='off'):
             new_rec['protein ratio'].append(protein_ratio)
             new_rec['carb ratio'].append(carb_ratio)
 
-    st.write('Running out of recipes. Please start over and choose more preferred meals.')
+    st.warning('Running out of recipes. Please start over and choose more preferred meals.')
     return

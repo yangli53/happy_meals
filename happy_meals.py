@@ -7,7 +7,7 @@ import helper
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-st.header("Happy Meals")
+st.title('HappyMeals')
 
 # user input demographic info
 gender = st.radio(label='Gender', options=('M', 'F'))
@@ -57,12 +57,11 @@ elif goal_wt < wt:
                  'to lose weight and you need', week, 
                  'weeks to reach your goal.')
     else:
-        st.write('Warning! You daily calorie need is lower than 1200. Please either', 
-                 'increase your goal weight or increase your activity level to',
-                 'ensure adequate daily nutrition.')
+        st.warning('Warning! You daily calorie need is lower than 1200.')
+        st.warning('Please either increase your goal weight or increase your activity level to ensure adequate daily nutrition.')
 
 else:
-    st.write('Oops! Your goal weight is over your current weight.')
+    st.warning('Oops! Your goal weight is over your current weight.')
 
 
 # user input meal preferences
@@ -84,35 +83,38 @@ options = st.multiselect('Please choose at least 3 meals you like.',
 
         
 if st.button('Submit'):
-
-    # use recommender
-    ## calculate cosine similarity
-    lda_array = lda_matrix.to_numpy()
-    cosine_sim = cosine_similarity(lda_array)
     
-    ## creating a Series for recipe titles
-    indices = pd.Series(lda_matrix.index)
+    if len(options) > 2:
+        # use recommender
+        ## calculate cosine similarity
+        lda_array = lda_matrix.to_numpy()
+        cosine_sim = cosine_similarity(lda_array)
 
-    ## get top 100 similar recipes for each option
-    rec_recipes = []
-    for title in options:
-        top_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
-        rec_recipes.extend(top_recipes)
-    
-    rec_recipes = list(set(rec_recipes))
-                        
-    # use optimizer
-    ## calculate protein and calorie needs per meal
-    protein_lower = np.round(wt_kg * 0.8 / 3, 1)
-    if goal_wt < wt:
-        calorie_need = np.round(new_calorie / 3)
-    else:
-        calorie_need = np.round(calorie / 3)
+        ## creating a Series for recipe titles
+        indices = pd.Series(lda_matrix.index)
 
-    ## use optimizer
-    if quick_meal == 'Yes':
-        helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need, time='on')
+        ## get top 100 similar recipes for each option
+        rec_recipes = []
+        for title in options:
+            top_recipes = helper.recommender(title, indices, lda_matrix, cosine_sim, 100)
+            rec_recipes.extend(top_recipes)
+
+        rec_recipes = list(set(rec_recipes))
+
+        # use optimizer
+        ## calculate protein and calorie needs per meal
+        protein_lower = np.round(wt_kg * 0.8 / 3, 1)
+        if goal_wt < wt:
+            calorie_need = np.round(new_calorie / 3)
+        else:
+            calorie_need = np.round(calorie / 3)
+
+        ## use optimizer
+        if quick_meal == 'Yes':
+            helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need, time='on')
+        else:
+            helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need)
+   
     else:
-        helper.optimizer(rec_recipes, df_nutrient, protein_lower, calorie_need)
-        
+        st.warning('Please choose at least 3 meals.')
         
