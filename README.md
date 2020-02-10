@@ -5,9 +5,9 @@ Find the recipes you like to lose weight
 I have a background in Nutrition and I want to build a web app (https://happy-meal-plan.herokuapp.com/) to generate a 5-day dinner plan based on users' food preferences and calorie needs. I scraped 5,000 recipes from Allrecipes.com and built a recipe recommender system based on ingredient similarity. I embedded a calculator to calculate daily calorie need based on each user's gender, age, height, current weight and goal weight. I also set filters for recipes with optimal nutrition values (less than 40% fat and meet the mininum protein requirement of each user) and for quick meals (optional). This project is a reflection of the combination of my domain knowledge and data science skills. 
 
 ## Built with
-Python
-Gensim
-Streamlit
+Python\n
+Gensim\n
+Streamlit\n
 Heroku
 
 ## How to use the app
