@@ -36,7 +36,12 @@ HappyMeals is accessible at https://happy-meal-plan.herokuapp.com/.
 ## Feedback
 This project was completed in 3 weeks and definately needs improvements. If you have any thoughts or suggestions, please email me at yangli102514@gmail.com.
 
-References:
+## References:
 1. https://www.cdc.gov/healthyweight/losing_weight/index.html
 2. https://www.ncbi.nlm.nih.gov/books/NBK56068/table/summarytables.t4/?report=objectonly
 3. https://health.gov/our-work/food-nutrition/2015-2020-dietary-guidelines/guidelines/appendix-7/
+4. https://p-mckenzie.github.io/2018/08/06/Allrecipes-categories-scraper/
+5. https://towardsdatascience.com/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0
+6. https://www.machinelearningplus.com/nlp/topic-modeling-gensim-python/
+7. https://towardsdatascience.com/end-to-end-topic-modeling-in-python-latent-dirichlet-allocation-lda-35ce4ed6b3e0
+8. https://towardsdatascience.com/how-to-build-from-scratch-a-content-based-movie-recommender-with-natural-language-processing-25ad400eb243
