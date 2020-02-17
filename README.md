@@ -20,7 +20,7 @@ In the actual app, 20 random recipes will be provided for users to choose based 
 
 - I checked the top words in each topic and the recipe titles with high probabilities in each topic and assigned a human readable name to each topic. As a result, I created a dataframe holding all recipes with their probability distribution across all topics (saved as `recipe_lda.csv`). 
 
-- I built a content-based recommender system using cosine similarity and added filters for calorie, nutrition and cook time (saved as `Recommender.ipyng`).
+- I built a content-based recommender system using cosine similarity and added filters for calorie, nutrition and cook time (saved as `Recommender.ipynb`).
 
 - I created another dataframe holding all recipess with calorie, nutrition and cook time (saved as `recipe_nutrient.csv`).
 
